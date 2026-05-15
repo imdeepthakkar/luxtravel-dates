@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Globe, MessageCircle, Map, User, Settings, Menu, X, Search } from 'lucide-react';
+import { Globe, MessageCircle, Map, User, Settings, Menu, X, Search, LogIn, LogOut, Shield } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 
 const navItems = [
@@ -11,9 +11,10 @@ const navItems = [
 ];
 
 export default function Navbar() {
-  const { activeTab, setActiveTab, searchQuery, setSearchQuery } = useApp();
+  const { activeTab, setActiveTab, searchQuery, setSearchQuery, currentUser, setShowAuthModal, logout } = useApp();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
+  const [showUserMenu, setShowUserMenu] = useState(false);
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 glass border-b border-white/10">
@@ -60,6 +61,24 @@ export default function Navbar() {
                 </span>
               </motion.button>
             ))}
+            {/* Admin Link */}
+            {currentUser && (
+              <motion.button
+                onClick={() => setActiveTab('admin')}
+                className={`relative px-4 py-2 rounded-lg font-medium transition-colors ${
+                  activeTab === 'admin'
+                    ? 'text-secondary'
+                    : 'text-text-secondary hover:text-white'
+                }`}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <span className="flex items-center gap-2">
+                  <Shield size={18} />
+                  Admin
+                </span>
+              </motion.button>
+            )}
           </div>
 
           {/* Right Side */}
@@ -73,13 +92,80 @@ export default function Navbar() {
               <Search size={20} />
             </motion.button>
 
-            {/* Settings */}
-            <motion.button
-              className="p-2 rounded-lg hover:bg-white/10 transition-colors hidden sm:block"
-              whileTap={{ scale: 0.9 }}
-            >
-              <Settings size={20} />
-            </motion.button>
+            {/* User Menu */}
+            {currentUser ? (
+              <div className="relative">
+                <motion.button
+                  onClick={() => setShowUserMenu(!showUserMenu)}
+                  className="flex items-center gap-2 p-2 rounded-lg hover:bg-white/10 transition-colors"
+                  whileTap={{ scale: 0.9 }}
+                >
+                  <img
+                    src={currentUser.photos?.[0] || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&q=80'}
+                    alt={currentUser.name}
+                    className="w-8 h-8 rounded-full object-cover"
+                  />
+                </motion.button>
+
+                <AnimatePresence>
+                  {showUserMenu && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 10 }}
+                      className="absolute right-0 top-full mt-2 w-48 rounded-xl glass overflow-hidden"
+                    >
+                      <div className="p-3 border-b border-white/10">
+                        <div className="font-medium">{currentUser.name}</div>
+                        <div className="text-text-secondary text-sm">{currentUser.email}</div>
+                      </div>
+                      <div className="p-2">
+                        <button
+                          onClick={() => {
+                            setActiveTab('profile');
+                            setShowUserMenu(false);
+                          }}
+                          className="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-white/10 text-left"
+                        >
+                          <User size={16} />
+                          My Profile
+                        </button>
+                        <button
+                          onClick={() => {
+                            setActiveTab('admin');
+                            setShowUserMenu(false);
+                          }}
+                          className="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-white/10 text-left"
+                        >
+                          <Shield size={16} />
+                          Admin Panel
+                        </button>
+                        <button
+                          onClick={() => {
+                            logout();
+                            setShowUserMenu(false);
+                          }}
+                          className="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-white/10 text-left text-red-400"
+                        >
+                          <LogOut size={16} />
+                          Logout
+                        </button>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            ) : (
+              <motion.button
+                onClick={() => setShowAuthModal(true)}
+                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-primary to-secondary text-white font-medium"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <LogIn size={18} />
+                <span className="hidden sm:inline">Sign In</span>
+              </motion.button>
+            )}
 
             {/* Mobile Menu Toggle */}
             <motion.button
@@ -144,6 +230,48 @@ export default function Navbar() {
                   {item.label}
                 </motion.button>
               ))}
+              {currentUser && (
+                <motion.button
+                  onClick={() => {
+                    setActiveTab('admin');
+                    setMobileMenuOpen(false);
+                  }}
+                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors ${
+                    activeTab === 'admin'
+                      ? 'bg-secondary/20 text-secondary'
+                      : 'hover:bg-white/10'
+                  }`}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <Shield size={20} />
+                  Admin Panel
+                </motion.button>
+              )}
+              {currentUser ? (
+                <motion.button
+                  onClick={() => {
+                    logout();
+                    setMobileMenuOpen(false);
+                  }}
+                  className="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors text-red-400 hover:bg-red-500/10"
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <LogOut size={20} />
+                  Logout
+                </motion.button>
+              ) : (
+                <motion.button
+                  onClick={() => {
+                    setShowAuthModal(true);
+                    setMobileMenuOpen(false);
+                  }}
+                  className="w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-gradient-to-r from-primary to-secondary text-white"
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <LogIn size={20} />
+                  Sign In
+                </motion.button>
+              )}
             </div>
           </motion.div>
         )}

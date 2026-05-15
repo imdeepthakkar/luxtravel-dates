@@ -3,11 +3,14 @@ import { AppProvider, useApp } from './context/AppContext';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import TripModal from './components/TripModal';
+import AuthModal from './components/AuthModal';
+import CreateTripModal from './components/CreateTripModal';
 import Home from './pages/Home';
 import Explore from './pages/Explore';
 import Messages from './pages/Messages';
 import Trips from './pages/Trips';
 import Profile from './pages/Profile';
+import Admin from './pages/Admin';
 
 function AppContent() {
   const { activeTab } = useApp();
@@ -22,6 +25,8 @@ function AppContent() {
         return <Messages />;
       case 'profile':
         return <Profile />;
+      case 'admin':
+        return <Admin />;
       default:
         return <Home />;
     }
@@ -35,6 +40,8 @@ function AppContent() {
       </AnimatePresence>
       <Footer />
       <TripModal />
+      <AuthModal />
+      <CreateTripModal />
     </div>
   );
 }
